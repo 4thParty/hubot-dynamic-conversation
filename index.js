@@ -15,4 +15,4 @@ DynamicConversation.prototype.start = function (msg, dynamicMsg, callback) {
 module.exports = function (robot) {
   var convo = new DynamicConversation(robot);
   return convo;
-}
+};

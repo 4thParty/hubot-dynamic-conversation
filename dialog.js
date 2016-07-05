@@ -29,7 +29,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
   if (message.answer.type === 'choice') {
     for (var j = 0, len = message.answer.options.length; j < len; j++) {
-      (function (j) {
+      (function choiceRunner(j) {
         var option = message.answer.options[j];
         self.dialog.addChoice(new RegExp(option.match, 'i'), function (dialogMessage) {
           dialogMessage.reply(option.response);
@@ -42,10 +42,8 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
         self.dialog.addChoice(/(.*)/i, function (dialogMessage) {
           dialogMessage.reply(message.error);
-          if (message.required) {
-            return done(new Error('Hubot cannot continue this conversation'));
-          }
-          done();
+          // Rerun the choice question when it fails
+          choiceRunner(j);
         });
       })(j);
     }
