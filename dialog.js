@@ -26,37 +26,29 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
   self.msg.reply(message.question);
   self.data.source = self.msg.envelope.user;
-  if (message.answer.type === 'choice') {
 
+  if (message.answer.type === 'choice') {
     for (var j = 0, len = message.answer.options.length; j < len; j++) {
       (function (j) {
-
         var option = message.answer.options[j];
         self.dialog.addChoice(new RegExp(option.match, 'i'), function (dialogMessage) {
           dialogMessage.reply(option.response);
-
           self.data.type = option.match;
-
           if (!option.valid) {
             return done(new Error('User provided an invalid response'));
           }
-
           done();
         });
 
         self.dialog.addChoice(/(.*)/i, function (dialogMessage) {
           dialogMessage.reply(message.error);
-
           if (message.required) {
             return done(new Error('Hubot cannot continue this conversation'));
           }
-
           done();
         });
-
       })(j);
     }
-
   }
 
   if (message.answer.type === 'text') {
@@ -95,7 +87,6 @@ Dialog.prototype._go = function () {
 
   cbs.push(function (done) {
     self.data.dateTime = new Date();
-    console.log(self.data)
     done();
   });
 
