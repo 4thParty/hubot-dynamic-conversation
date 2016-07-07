@@ -18,6 +18,7 @@ function Dialog(switchBoard, msg, messageOptions, callback) {
     attachment: ''
   };
 
+  this.data.source = msg.envelope.user;
   this._go();
 }
 
@@ -25,7 +26,6 @@ Dialog.prototype._invokeDialog = function (message, done) {
   var self = this;
 
   self.msg.reply(message.question);
-  self.data.source = self.msg.envelope.user;
 
   if (message.answer.type === 'choice') {
     for (var j = 0, len = message.answer.options.length; j < len; j++) {
