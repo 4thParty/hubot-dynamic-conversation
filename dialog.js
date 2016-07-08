@@ -1,14 +1,12 @@
 var series = require('async-series');
+var util = require('util');
+var EventEmitter = require('events');
 
-function Dialog(switchBoard, msg, messageOptions, callback) {
-  if (typeof messageOptions === 'function') throw new Error('Provide the dynamic message options array');
-
-  callback = callback && typeof callback === 'function' ? callback : function () {};
-
+function Dialog(switchBoard, msg, messageOptions) {
+  EventEmitter.call(this);
   this.dialog = switchBoard.startDialog(msg);
   this.msg = msg;
   this.messageOptions = messageOptions;
-  this.callback = callback;
 
   this.data = {
     source: '',
@@ -21,6 +19,7 @@ function Dialog(switchBoard, msg, messageOptions, callback) {
   this.data.source = msg.envelope.user;
   this._go();
 }
+util.inherits(Dialog, EventEmitter);
 
 Dialog.prototype._invokeDialog = function (message, done) {
   var self = this;
@@ -89,7 +88,7 @@ Dialog.prototype._go = function () {
   });
 
   series(cbs, function (err) {
-    self.callback(err, self.msg, self);
+    return self.emit('end', err);
   });
 };
 
