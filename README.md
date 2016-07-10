@@ -14,20 +14,20 @@ robot.respond /make a report/i, (msg) ->
       question: "Is it in a `public` or `private` area?",
       answer: {
       type: "choice",
-      options: [
-        {
-          match: "public",
-          valid: true,
-          response: "OK you said *public*, next step...",
-          value: "public",
-        },
-        {
-          match: "private",
-          valid: false,
-          response: "Sorry, you will have to find a contractor for private maintenance"
-        }
-      ]
-    },
+        options: [
+          {
+            match: "public",
+            valid: true,
+            response: "OK you said *public*, next step...",
+            value: "public",
+          },
+          {
+            match: "private",
+            valid: false,
+            response: "Sorry, you will have to find a contractor for private maintenance"
+          }
+        ]
+      },
       required: true,
       error: "Sorry, I didn't understand your response. Please say `private` or `public` to proceed."
     },
@@ -49,11 +49,13 @@ robot.respond /make a report/i, (msg) ->
     }
   ]
 
-dynamic.start msg, maintenanceRequestModel, (err, msg, conversation) ->
+dialog = dynamic.start msg, maintenanceRequestModel, (err, msg, conversation) ->
   if err
     robot.logger.error err
   else
     data = conversation.fetch()
     robot.logger.info data
+# dialog is an instance of an EventEmitter
+# It emits an `end` event when the dialog with the user is done
 ```
 
