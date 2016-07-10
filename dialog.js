@@ -40,8 +40,8 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
   if (message.answer.type === 'choice') {
     for (var j = 0, len = message.answer.options.length; j < len; j++) {
-      (function choiceRunner(j) {
-        var option = message.answer.options[j];
+      (function choiceRunner(choiceIndex) {
+        var option = message.answer.options[choiceIndex];
         self.dialog.addChoice(new RegExp(option.match, 'i'), function (dialogMessage) {
           dialogMessage.reply(option.response);
           self.data.type = option.match;
@@ -54,7 +54,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
         self.dialog.addChoice(/(.*)/i, function (dialogMessage) {
           dialogMessage.reply(message.error);
           // Rerun the choice question when it fails
-          choiceRunner(j);
+          choiceRunner(choiceIndex);
         });
       })(j);
     }

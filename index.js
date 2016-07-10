@@ -38,15 +38,13 @@ DynamicConversation.prototype.start = function (msg, dialogOptions, callback) {
     }
 
     this.robot.brain.data.announcements.push(dialog.fetch());
-    console.log(this.robot.brain.data.announcements);
     return callback(null, msg, dialog);
   }.bind(this));
   dialog.start();
 
   return dialog;
-}
+};
 
 module.exports = function (robot) {
-  var dynamicConversation = new DynamicConversation(robot);
-  return dynamicConversation;
+  return new DynamicConversation(robot);
 };
