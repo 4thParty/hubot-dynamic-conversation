@@ -32,13 +32,13 @@ function DynamicConversation(robot) {
  */
 DynamicConversation.prototype.start = function (msg, dialogOptions, callback) {
   var dialog = new Dialog(this.switchBoard, msg, dialogOptions);
-  dialog.on('end', function (err) {
+  dialog.on('end', function (err, res) {
     if (err) {
-      return callback(err, msg, dialog);
+      return callback(err, res, dialog);
     }
 
     this.robot.brain.data.announcements.push(dialog.fetch());
-    return callback(null, msg, dialog);
+    return callback(null, res, dialog);
   }.bind(this));
   dialog.start();
 

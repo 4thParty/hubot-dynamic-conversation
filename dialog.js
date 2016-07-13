@@ -2,9 +2,16 @@ var series = require('async-series');
 var util = require('util');
 var EventEmitter = require('events');
 
+/**
+ * Starts a new dialog with a user
+ * @param {Conversation} switchBoard
+ * @param {Hubot.Response} msg
+ * @param {Array} messageOptions - refer to docs in index.js `Conversation.prototype.start`
+ * @api private
+ */
 function Dialog(switchBoard, msg, messageOptions) {
   EventEmitter.call(this);
-  this.dialog = switchBoard.startDialog(msg);
+  this.dialog = switchBoard.startDialog(msg, Dialog.TIMEOUT);
   this.msg = msg;
   this.messageOptions = messageOptions;
 
@@ -20,6 +27,21 @@ function Dialog(switchBoard, msg, messageOptions) {
 }
 util.inherits(Dialog, EventEmitter);
 
+/**
+ * Invoke a dialog message with the user and collect the response into the data
+ * @param  {Object}   message It holds the message model
+ * eg. {
+ *       question: 'Do you have any trouble',
+ *       answer: {
+ *         type: 'text'
+ *       },
+ *       required: false,
+ *       error: 'Sorry, did not understand response'
+ *     }
+ * @param  {Function} done    The function provided by async-series to call the next dialog message
+ * @return {null}
+ * @api private
+ */
 Dialog.prototype._invokeDialog = function (message, done) {
   var self = this;
   var question = message.question.trim();
@@ -34,6 +56,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
   if (!message.required) {
     self.dialog.addChoice(/skip/i, function (dialogMessage) {
       dialogMessage.reply('Ok. we are skipping this section!!');
+      self.msg = dialogMessage;
       done();
     });
   }
@@ -48,12 +71,14 @@ Dialog.prototype._invokeDialog = function (message, done) {
           if (!option.valid) {
             return done(new Error('User provided an invalid response'));
           }
+          self.msg = dialogMessage;
           done();
         });
 
         self.dialog.addChoice(/(.*)/i, function (dialogMessage) {
           dialogMessage.reply(message.error);
           // Rerun the choice question when it fails
+          self.msg = dialogMessage;
           choiceRunner(choiceIndex);
         });
       })(j);
@@ -63,6 +88,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
   if (message.answer.type === 'text') {
     self.dialog.addChoice(/^(?!\s*$).+/i, function (dialogMessage) {
       self.data.description = dialogMessage.message.text;
+      self.msg = dialogMessage;
       done();
     });
   }
@@ -75,6 +101,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
 /**
  * Gets the data for the dialog
  * @return {Object} The object that describes the dialog
+ * @api public
  */
 Dialog.prototype.fetch = function () {
   return this.data;
@@ -84,6 +111,7 @@ Dialog.prototype.fetch = function () {
 /**
  * Starts the dialog with the user
  * @return {null}
+ * @api public
  */
 Dialog.prototype.start = function () {
   var self = this;
@@ -102,6 +130,7 @@ Dialog.prototype.start = function () {
   }
 
   cbs.push(function (done) {
+    self.msg.reply('Thanks for making a report. We are looking into it!!');
     self.data.dateTime = new Date();
     done();
   });
@@ -109,8 +138,15 @@ Dialog.prototype.start = function () {
   // call the callbacks in series
   // emit `end` when all is done or an error occurs
   series(cbs, function (err) {
-    return self.emit('end', err);
+    return self.emit('end', err, self.msg);
   });
 };
 
+Dialog.TIMEOUT = 500 * 1000;
+
+/**
+ * Module exports
+ * @type {Dialog}
+ * @public
+ */
 module.exports = Dialog;
