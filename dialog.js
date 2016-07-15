@@ -95,6 +95,21 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
   // TODO: provide proper implementation of attachment
   if (message.answer.type === 'attachment') {
+    self.dialog.addChoice(/.*/, function (dialogMessage) {
+      if (dialogMessage.message.attachment && dialogMessage.message.attachment.type === 'image') {
+        self.data.attachment = dialogMessage.message.attachment;
+        self.msg = dialogMessage;
+        return done();
+      }
+
+      if (message.required) {
+        dialogMessage.reply(message.error);
+        return self._invokeDialog(message, done);
+      }
+
+      dialogMessage.reply(message.error);
+      done();
+    });
   }
 };
 

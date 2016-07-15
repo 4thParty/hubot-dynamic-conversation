@@ -37,7 +37,7 @@ DynamicConversation.prototype.start = function (msg, dialogOptions, callback) {
       return callback(err, res, dialog);
     }
 
-    this.robot.brain.data.announcements.push(dialog.fetch());
+    this.robot.brain.data.announcements.unshift(dialog.fetch());
     return callback(null, res, dialog);
   }.bind(this));
   dialog.start();
