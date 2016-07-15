@@ -3,6 +3,14 @@ This package helps you to make dynamic conversations with hubot. It allows you t
 
 ### Usage
 
+*NB*
+
+Currently, the v0.1.4 of the [hubot-rocketchat](https://github.com/RocketChat/hubot-rocketchat) does not properly support attachment. To add the attachment support use my fork of the [hubot-rocketchat](https://github.com/ngenerio/hubot-rocketchat).
+
+Change the version number of hubot-rocketchat in your package.json to: https://github.com/ngenerio/hubot-rocketchat#a86a49244b87a73596fbc05f311e5d5c85737fa1
+
+
+
 ```coffee
 DynamicConversation = require 'hubot-dynamic-conversation'
 dynamic = new DynamicConversation robot
@@ -49,11 +57,11 @@ robot.respond /make a report/i, (msg) ->
     }
   ]
 
-dialog = dynamic.start msg, maintenanceRequestModel, (err, msg, conversation) ->
+dialog = dynamic.start msg, maintenanceRequestModel, (err, msg, dialog) ->
   if err
     robot.logger.error err
   else
-    data = conversation.fetch()
+    data = dialog.fetch()
     robot.logger.info data
 # dialog is an instance of an EventEmitter
 # It emits an `end` event when the dialog with the user is done
