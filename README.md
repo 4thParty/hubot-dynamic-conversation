@@ -7,7 +7,7 @@ This package helps you to make dynamic conversations with hubot. It allows you t
 
 Currently, the v0.1.4 of the [hubot-rocketchat](https://github.com/RocketChat/hubot-rocketchat) does not properly support attachment. To add the attachment support use my fork of the [hubot-rocketchat](https://github.com/ngenerio/hubot-rocketchat).
 
-Change the version number of hubot-rocketchat in your package.json to: https://github.com/ngenerio/hubot-rocketchat#a86a49244b87a73596fbc05f311e5d5c85737fa1
+Change the version number of hubot-rocketchat in your package.json to: https://github.com/ngenerio/hubot-rocketchat#a86a49244b87a73596fbc05f311e5d5c85737fa1 or use https://github.com/RocketChat/hubot-rocketchat/commit/72bbf02d519b5dedb2b8e45e093fe2b0b23df9b3
 
 Check the [example.coffee](https://github.com/4thParty/hubot-dynamic-conversation/blob/master/example.coffee) for more information.
 
