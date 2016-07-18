@@ -50,8 +50,6 @@ module.exports = (robot) ->
       if err?
         return console.log "error occured in the dialog #{err}"
 
-      msg.reply 'Thanks for making a maintennce report'
-
       dialogData = dialog.fetch()
       console.log dialogData
 
