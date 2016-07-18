@@ -10,7 +10,7 @@ module.exports = (robot) ->
       {
         question: "Is it in a `public` or `private` area?",
         answer: {
-        type: "choice",
+          type: "choice",
           options: [
             {
               match: "public",
@@ -48,7 +48,7 @@ module.exports = (robot) ->
 
     dialog = conversation.start msg, maintenanceRequestModel, (err, msg, dialog) ->
       if err?
-        console.log "error occured in the dialog #{err}"
+        return console.log "error occured in the dialog #{err}"
 
       msg.reply 'Thanks for making a maintennce report'
 
