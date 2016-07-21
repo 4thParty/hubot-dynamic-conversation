@@ -9,18 +9,21 @@ var EventEmitter = require('events');
  * @param {Array} messageOptions - refer to docs in index.js `Conversation.prototype.start`
  * @api private
  */
-function Dialog(switchBoard, msg, messageOptions) {
+function Dialog(switchBoard, msg, messageOptions, robot) {
   EventEmitter.call(this);
   this.dialog = switchBoard.startDialog(msg, Dialog.TIMEOUT);
   this.msg = msg;
-  this.messageOptions = messageOptions;
+  this.messageOptions = messageOptions.conversation;
+  this.abortKeyword = messageOptions.abortKeyword;
+  this.robot = robot;
 
   this.data = {
     source: '',
     dateTime: null,
     type: 'private',
     description: '',
-    attachment: ''
+    attachment: '',
+    aborted: false
   };
 
   this.data.source = msg.envelope.user;
@@ -58,6 +61,14 @@ Dialog.prototype._invokeDialog = function (message, done) {
       dialogMessage.reply('Ok. we are skipping this section!!');
       self.msg = dialogMessage;
       done();
+    });
+  }
+
+  if (self.abortKeyword) {
+   self.dialog.addChoice(this.abortKeyword, function (dialogMessage) {
+      self.msg = dialogMessage;
+      self.data.aborted = true;
+      done(new Error('Aborted'));
     });
   }
 
@@ -143,15 +154,16 @@ Dialog.prototype.start = function () {
     })(i);
   }
 
-  cbs.push(function (done) {
-    self.msg.reply('Thanks for making a report. We are looking into it!!');
-    self.data.dateTime = new Date();
-    done();
-  });
-
+  if (self.abortKeyword) self.msg.reply('You can cancel this conversation with `cancel`.');
   // call the callbacks in series
   // emit `end` when all is done or an error occurs
   series(cbs, function (err) {
+    self.data.dateTime = new Date();
+
+    if (err && err.message === 'Aborted' && self.data.aborted) {
+      self.msg.reply('You cancelled the dialog.');
+    }
+
     return self.emit('end', err, self.msg);
   });
 };

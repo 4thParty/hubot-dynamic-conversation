@@ -31,7 +31,7 @@ function DynamicConversation(robot) {
  * @return {Dialog} - A dialog instance
  */
 DynamicConversation.prototype.start = function (msg, dialogOptions, callback) {
-  var dialog = new Dialog(this.switchBoard, msg, dialogOptions);
+  var dialog = new Dialog(this.switchBoard, msg, dialogOptions, this.robot);
   dialog.on('end', function (err, res) {
     if (err) {
       return callback(err, res, dialog);
