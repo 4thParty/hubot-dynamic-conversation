@@ -31,6 +31,28 @@ function Dialog(switchBoard, msg, messageOptions, robot) {
 util.inherits(Dialog, EventEmitter);
 
 /**
+ * Strip the bot's name from the description text
+ * @param  {String} text
+ * @return {String}
+ * Implemented from https://github.com/timkinnane/hubot-rocketchat-announcement/blob/master/src/rocketchat-announcement.coffee#L46-L54
+ */
+Dialog.prototype._stripBotName = function (text) {
+  var nameStart = text.charAt(0) === '@' ? 1 : 0;
+  var nameStrip;
+
+  if (text.indexOf(this.robot.name) === nameStart) nameStrip = this.robot.name;
+  if (text.indexOf(this.robot.alias) === nameStart) nameStrip = this.robot.alias;
+  if (text.indexOf('Hubot') === nameStart) nameStrip = 'Hubot';
+  if (text.indexOf('hubot') === nameStart) nameStrip = 'hubot';
+
+  var len = !!nameStrip ? nameStart + nameStrip.length : 0;
+
+  if (text.charAt(len) === ':') len += 1;
+
+  return text.substring(len).trim()
+};
+
+/**
  * Invoke a dialog message with the user and collect the response into the data
  * @param  {Object}   message It holds the message model
  * eg. {
@@ -68,6 +90,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
    self.dialog.addChoice(this.abortKeyword, function (dialogMessage) {
       self.msg = dialogMessage;
       self.data.aborted = true;
+      self.msg.reply('You cancelled the dialog.');
       done(new Error('Aborted'));
     });
   }
@@ -98,7 +121,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
   if (message.answer.type === 'text') {
     self.dialog.addChoice(/^(?!\s*$).+/i, function (dialogMessage) {
-      self.data.description = dialogMessage.message.text;
+      self.data.description = self._stripBotName(dialogMessage.message.text);
       self.msg = dialogMessage;
       done();
     });
@@ -159,11 +182,6 @@ Dialog.prototype.start = function () {
   // emit `end` when all is done or an error occurs
   series(cbs, function (err) {
     self.data.dateTime = new Date();
-
-    if (err && err.message === 'Aborted' && self.data.aborted) {
-      self.msg.reply('You cancelled the dialog.');
-    }
-
     return self.emit('end', err, self.msg);
   });
 };
