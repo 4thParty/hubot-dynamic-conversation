@@ -4,14 +4,14 @@ module.exports = (robot) ->
   conversation = new DynamicConversation robot
 
   robot.respond /make a report/i, (msg) ->
-    robot.logger.info 'hello'
     msg.reply "OK, I can make a maintenance report for you, just answer some questions..."
 
     maintenanceRequestModel = {
       abortKeyword: 'quit',
-      conversation: [ 
+      onAbortMessage: 'You have cancelled this report.'
+      conversation: [
         {
-          question: "Is it in a [public]or [private]area?",
+          question: "Is it in a [public]or [private] area?",
           answer: {
             type: "choice",
             options: [
@@ -29,7 +29,7 @@ module.exports = (robot) ->
             ]
           },
           required: true,
-          error: "Sorry, I didn't understand your response. Please say [private]or [public]to proceed."
+          error: "Sorry, I didn't understand your response. Please say [private] or [public] to proceed."
         },
         {
           question: "Please describe the issue",
@@ -40,7 +40,7 @@ module.exports = (robot) ->
           error: "Sorry your response didn't contain any text, please describe the issue."
         },
         {
-          question: "Please reply with an attached photo of the issue, or say [skip]if you don't have a photo"
+          question: "Please reply with an attached photo of the issue, or say [skip] if you don't have a photo"
           answer: {
             type: "attachment"
           },
@@ -49,11 +49,12 @@ module.exports = (robot) ->
         }
       ]
     }
-    
+
     dialog = conversation.start msg, maintenanceRequestModel, (err, msg, dialog) ->
       if err?
         return console.log "error occured in the dialog #{err}"
 
+      console.log 'Thanks for making a maintenance report'
       dialogData = dialog.fetch()
       console.log dialogData
 

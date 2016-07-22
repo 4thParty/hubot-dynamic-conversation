@@ -19,9 +19,7 @@ function Dialog(switchBoard, msg, messageOptions, robot) {
   this.data = {
     source: '',
     dateTime: null,
-    type: 'private',
-    description: '',
-    attachment: '',
+    answers: [],
     aborted: false
   };
 
@@ -51,6 +49,7 @@ Dialog.prototype._stripBotName = function (text) {
   return text.substring(len).trim()
 };
 
+
 /**
  * Invoke a dialog message with the user and collect the response into the data
  * @param  {Object}   message It holds the message model
@@ -73,6 +72,18 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
   if (!message.required) {
     question = ((code === 46 || code === 63) ? question : question + '.') + ' Reply with [skip] to move to the next question.';
+  }
+
+  function updateAnswers(key, value) {
+    var currAnswer = {
+      question: message.question,
+      response: {
+        type: message.answer.type
+      }
+    };
+
+    currAnswer.response[key] = value;
+    self.data.answers.push(currAnswer);
   }
 
   self.msg.reply(question);
@@ -101,12 +112,15 @@ Dialog.prototype._invokeDialog = function (message, done) {
     for (var j = 0, len = message.answer.options.length; j < len; j++) {
       (function choiceRunner(choiceIndex) {
         var option = message.answer.options[choiceIndex];
+
         self.dialog.addChoice(option.match, function (dialogMessage) {
           dialogMessage.reply(option.response);
-          self.data.type = option.match;
+          updateAnswers('value', self._stripBotName(dialogMessage.message.text));
+
           if (!option.valid) {
             return done(new Error('User provided an invalid response'));
           }
+
           self.msg = dialogMessage;
           done();
         });
@@ -115,7 +129,6 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
     self.dialog.addChoice(/(.*)/i, function (dialogMessage) {
       dialogMessage.reply(message.error);
-      // Rerun the choice question when it fails
       self.msg = dialogMessage;
       self._invokeDialog(message, done);
     });
@@ -123,7 +136,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
   if (message.answer.type === 'text') {
     self.dialog.addChoice(/^(?!\s*$).+/i, function (dialogMessage) {
-      self.data.description = self._stripBotName(dialogMessage.message.text);
+      updateAnswers('value', self._stripBotName(dialogMessage.message.text));
       self.msg = dialogMessage;
       done();
     });
@@ -132,7 +145,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
   if (message.answer.type === 'attachment') {
     self.dialog.addChoice(/.*/, function (dialogMessage) {
       if (dialogMessage.message.attachment && dialogMessage.message.attachment.type === 'image') {
-        self.data.attachment = dialogMessage.message.attachment;
+        updateAnswers('link', dialogMessage.message.attachment.link);
         self.msg = dialogMessage;
         return done();
       }
