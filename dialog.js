@@ -40,9 +40,9 @@ Dialog.prototype._stripBotName = function (text) {
   var nameStrip;
 
   if (text.indexOf(this.robot.name) === nameStart) nameStrip = this.robot.name;
-  if (text.indexOf(this.robot.alias) === nameStart) nameStrip = this.robot.alias;
-  if (text.indexOf('Hubot') === nameStart) nameStrip = 'Hubot';
-  if (text.indexOf('hubot') === nameStart) nameStrip = 'hubot';
+  else if (text.indexOf(this.robot.alias) === nameStart) nameStrip = this.robot.alias;
+  else if (text.indexOf('Hubot') === nameStart) nameStrip = 'Hubot';
+  else if (text.indexOf('hubot') === nameStart) nameStrip = 'hubot';
 
   var len = !!nameStrip ? nameStart + nameStrip.length : 0;
 
