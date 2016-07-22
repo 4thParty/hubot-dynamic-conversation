@@ -13,8 +13,7 @@ function Dialog(switchBoard, msg, messageOptions, robot) {
   EventEmitter.call(this);
   this.dialog = switchBoard.startDialog(msg, Dialog.TIMEOUT);
   this.msg = msg;
-  this.messageOptions = messageOptions.conversation;
-  this.abortKeyword = messageOptions.abortKeyword;
+  this.messageOptions = messageOptions;
   this.robot = robot;
 
   this.data = {
@@ -73,7 +72,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
   var code = question.charCodeAt(question.length - 1);
 
   if (!message.required) {
-    question = ((code === 46 || code === 63) ? question : question + '.') + ' Reply with `skip` to move to the next question.';
+    question = ((code === 46 || code === 63) ? question : question + '.') + ' Reply with [skip] to move to the next question.';
   }
 
   self.msg.reply(question);
@@ -86,11 +85,14 @@ Dialog.prototype._invokeDialog = function (message, done) {
     });
   }
 
-  if (self.abortKeyword) {
-   self.dialog.addChoice(this.abortKeyword, function (dialogMessage) {
+  if (self.messageOptions.abortKeyword) {
+   self.dialog.addChoice(this.messageOptions.abortKeyword, function (dialogMessage) {
       self.msg = dialogMessage;
       self.data.aborted = true;
-      self.msg.reply('You cancelled the dialog.');
+
+      if (self.messageOptions.onAbortMessage)
+        self.msg.reply(self.messageOptions.onAbortMessage);
+
       done(new Error('Aborted'));
     });
   }
@@ -168,20 +170,24 @@ Dialog.prototype.start = function () {
   // set all the dialog messages as callback functions that will be run in series
   // that means the next question won't be asked until the previous one has been
   // dealt with
-  for (var i = 0, l = self.messageOptions.length; i < l; i++) {
+  for (var i = 0, l = self.messageOptions.conversation.length; i < l; i++) {
     (function (currIndex) {
-      var message = self.messageOptions[currIndex];
+      var message = self.messageOptions.conversation[currIndex];
       cbs.push(function (done) {
         self._invokeDialog(message, done);
       });
     })(i);
   }
 
-  if (self.abortKeyword) self.msg.reply('You can cancel this conversation with `cancel`.');
+  if (self.messageOptions.abortKeyword) self.msg.reply('You can cancel this conversation with [' + self.messageOptions.abortKeyword + '].');
   // call the callbacks in series
-  // emit `end` when all is done or an error occurs
+  // emit 'end' when all is done or an error occurs
   series(cbs, function (err) {
     self.data.dateTime = new Date();
+
+    if (self.messageOptions.onCompleteMessage)
+      self.msg.reply(self.messageOptions.onCompleteMessage);
+
     return self.emit('end', err, self.msg);
   });
 };
