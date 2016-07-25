@@ -24,6 +24,7 @@ function Dialog(switchBoard, msg, messageOptions, robot) {
   };
 
   this.data.source = msg.envelope.user;
+  this.data.robot = { name: robot.name, alias: robot.alias };
 }
 util.inherits(Dialog, EventEmitter);
 
@@ -90,7 +91,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
   if (!message.required) {
     self.dialog.addChoice(/skip/i, function (dialogMessage) {
-      dialogMessage.reply('Ok. we are skipping this section!!');
+      dialogMessage.reply('Ok. we are skipping this section.');
       self.msg = dialogMessage;
       done();
     });
@@ -198,7 +199,7 @@ Dialog.prototype.start = function () {
   series(cbs, function (err) {
     self.data.dateTime = new Date();
 
-    if (self.messageOptions.onCompleteMessage)
+    if (!self.data.aborted && self.messageOptions.onCompleteMessage)
       self.msg.reply(self.messageOptions.onCompleteMessage);
 
     return self.emit('end', err, self.msg);
