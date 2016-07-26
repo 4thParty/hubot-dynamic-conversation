@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "contributors": [
+    "Gary Chapman <gary.chapman@4thparty.com.au>",
+    "Tim Kinnane <tim.kinnane@4thparty.com.au>"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
