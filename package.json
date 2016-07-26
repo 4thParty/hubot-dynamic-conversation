@@ -1,12 +1,24 @@
 {
   "name": "hubot-dynamic-conversation",
   "version": "1.0.0",
-  "description": "",
+  "description": "Have conversation with user without the hustle of `robot.hear`",
   "main": "index.js",
+  "contributors": [
+    "Gary Chapman <gary.chapman@4thparty.com.au>",
+    "Tim Kinnane <tim.kinnane@4thparty.com.au>"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "hubot",
+    "dynamic",
+    "conversation",
+    "dialog",
+    "forking",
+    "bot",
+    "robot"
+  ],
   "author": "Eugene Asiedu <ngene84@gmail.com> (https://github.com/ngenerio)",
   "license": "MIT",
   "dependencies": {
