@@ -45,6 +45,10 @@ Dialog.prototype._stripBotName = function (text) {
 
   var len = !!nameStrip ? nameStart + nameStrip.length : 0;
 
+  // handle situations where someone answers a question with the bot name, which could legitimately happen
+  if (text.length == nameStrip.length)
+    return text;
+
   if (text.charAt(len) === ':') len += 1;
 
   return text.substring(len).trim()
