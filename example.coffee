@@ -3,36 +3,37 @@ DynamicConversation = require 'hubot-dynamic-conversation'
 module.exports = (robot) ->
   conversation = new DynamicConversation robot
 
-  robot.respond /make a report/i, (msg) ->
-    msg.reply "OK, I can make a maintenance report for you, just answer some questions..."
+  robot.respond /transaction/i, (msg) ->
+    msg.reply "Welcome to TraderBot. Let's get started..."
 
-    maintenanceRequestModel = {
-      abortKeyword: 'quit',
-      onAbortMessage: 'You have cancelled this report.'
+    conversationModel = {
+      abortKeyword: "quit",
+      onAbortMessage: "You have cancelled the transaction"
+      onCompleteMessage: "Thankyou for using TraderBot.",
       conversation: [
         {
-          question: "Is it in a [public]or [private] area?",
+          question: "Do you want to sell or buy?",
           answer: {
             type: "choice",
             options: [
               {
-                match: "public",
+                match: "sell",
                 valid: true,
-                response: "OK you said *public*, next step...",
-                value: "public"
+                response: "OK you said *sell*, next step...",
+                value: "sell"
               },
               {
-                match: "private",
+                match: "buy",
                 valid: false,
-                response: "Sorry, you will have to find a contractor for private maintenance"
+                response: "Ok, I will forward you to our sales department."
               }
             ]
           },
           required: true,
-          error: "Sorry, I didn't understand your response. Please say [private] or [public] to proceed."
+          error: "Sorry, I didn't understand your response. Please say buy or sell to proceed."
         },
         {
-          question: "Please describe the issue",
+          question: "Please describe the item you are selling",
           answer: {
             type: "text"
           },
@@ -40,7 +41,7 @@ module.exports = (robot) ->
           error: "Sorry your response didn't contain any text, please describe the issue."
         },
         {
-          question: "Please reply with an attached photo of the issue, or say [skip] if you don't have a photo"
+          question: "Please reply with an attached photo of the item, or say [skip] if you don't have a photo"
           answer: {
             type: "attachment"
           },
@@ -50,13 +51,10 @@ module.exports = (robot) ->
       ]
     }
 
-    dialog = conversation.start msg, maintenanceRequestModel, (err, msg, dialog) ->
+    dialog = conversation.start msg, conversationModel, (err, msg, dialog) ->
       if err?
         return console.log "error occured in the dialog #{err}"
 
-      console.log 'Thanks for making a maintenance report'
+      console.log "Thank you for using TraderBot."
       dialogData = dialog.fetch()
       console.log dialogData
-
-  robot.respond /help/i, (msg) ->
-    msg.reply 'make a maintenance report'
