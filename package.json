@@ -1,7 +1,7 @@
 {
   "name": "hubot-dynamic-conversation",
   "version": "1.0.0",
-  "description": "Have conversation with user with the hustle of `robot.hear`",
+  "description": "Have conversation with user without the hustle of `robot.hear`",
   "main": "index.js",
   "contributors": [
     "Gary Chapman <gary.chapman@4thparty.com.au>",
