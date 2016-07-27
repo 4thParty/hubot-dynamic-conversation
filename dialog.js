@@ -76,7 +76,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
   var code = question.charCodeAt(question.length - 1);
 
   if (!message.required) {
-    question = ((code === 46 || code === 63) ? question : question + '.') + ' Reply with [skip] to move to the next question.';
+    question = ((code === 46 || code === 63) ? question : question + '.') + ' (or say [skip])';
   }
 
   function updateAnswers(key, value) {
@@ -95,7 +95,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
   if (!message.required) {
     self.dialog.addChoice(/skip/i, function (dialogMessage) {
-      dialogMessage.reply('Ok. we are skipping this section.');
+      //dialogMessage.reply('Ok. we are skipping this section.');
       self.msg = dialogMessage;
       done();
     });
@@ -119,7 +119,10 @@ Dialog.prototype._invokeDialog = function (message, done) {
         var option = message.answer.options[choiceIndex];
 
         self.dialog.addChoice(option.match, function (dialogMessage) {
-          dialogMessage.reply(option.response);
+          
+          if (option.response)
+            dialogMessage.reply(option.response);
+
           updateAnswers('value', self._stripBotName(dialogMessage.message.text));
 
           if (!option.valid) {
@@ -197,7 +200,8 @@ Dialog.prototype.start = function () {
     })(i);
   }
 
-  if (self.messageOptions.abortKeyword) self.msg.reply('You can cancel this conversation with [' + self.messageOptions.abortKeyword + '].');
+  // if (self.messageOptions.abortKeyword) self.msg.reply('You can cancel this conversation with [' + self.messageOptions.abortKeyword + '].');
+  
   // call the callbacks in series
   // emit 'end' when all is done or an error occurs
   series(cbs, function (err) {
