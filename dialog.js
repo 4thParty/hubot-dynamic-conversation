@@ -11,7 +11,7 @@ var EventEmitter = require('events');
  */
 function Dialog(switchBoard, msg, messageOptions, robot) {
   EventEmitter.call(this);
-  this.dialog = switchBoard.startDialog(msg, Dialog.TIMEOUT);
+  this.dialog = switchBoard.startDialog(msg, Dialog.TIMEOUT, messageOptions.onTimeoutMessage);
   this.msg = msg;
   this.messageOptions = messageOptions;
   this.robot = robot;
