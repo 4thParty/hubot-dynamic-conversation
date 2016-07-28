@@ -72,7 +72,7 @@ Dialog.prototype._stripBotName = function (text) {
  */
 Dialog.prototype._invokeDialog = function (message, done) {
   var self = this;
-  var question = message.question.trim();
+  var question = message.question;
   var code = question.charCodeAt(question.length - 1);
 
   if (!message.required) {
