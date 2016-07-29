@@ -35,6 +35,12 @@ util.inherits(Dialog, EventEmitter);
  * Implemented from https://github.com/timkinnane/hubot-rocketchat-announcement/blob/master/src/rocketchat-announcement.coffee#L46-L54
  */
 Dialog.prototype._stripBotName = function (text) {
+
+  // TODO: consider using the following code (after testing)
+
+  // var match = text.match(new RegExp("^(@?(?:"+ this.robot.name + "|" + this.robot.alias + "|hubot):?)?(.*)", "i"));
+  // return match[2].trim();
+
   var nameStart = text.charAt(0) === '@' ? 1 : 0;
   var nameStrip;
 
@@ -91,11 +97,11 @@ Dialog.prototype._invokeDialog = function (message, done) {
     self.data.answers.push(currAnswer);
   }
 
-  self.msg.reply(question);
+  self.msg.sendDirect(question);
 
   if (!message.required) {
     self.dialog.addChoice(/skip/i, function (dialogMessage) {
-      //dialogMessage.reply('Ok. we are skipping this section.');
+      //dialogMessage.sendDirect('Ok. we are skipping this section.');
       self.msg = dialogMessage;
       done();
     });
@@ -107,7 +113,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
       self.data.aborted = true;
 
       if (self.messageOptions.onAbortMessage)
-        self.msg.reply(self.messageOptions.onAbortMessage);
+        self.msg.sendDirect(self.messageOptions.onAbortMessage);
 
       done(new Error('Aborted'));
     });
@@ -121,7 +127,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
         self.dialog.addChoice(option.match, function (dialogMessage) {
           
           if (option.response)
-            dialogMessage.reply(option.response);
+            dialogMessage.sendDirect(option.response);
 
           updateAnswers('value', self._stripBotName(dialogMessage.message.text));
 
@@ -136,7 +142,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
     }
 
     self.dialog.addChoice(/(.*)/i, function (dialogMessage) {
-      dialogMessage.reply(message.error);
+      dialogMessage.sendDirect(message.error);
       self.msg = dialogMessage;
       self._invokeDialog(message, done);
     });
@@ -159,11 +165,11 @@ Dialog.prototype._invokeDialog = function (message, done) {
       }
 
       if (message.required) {
-        dialogMessage.reply(message.error);
+        dialogMessage.sendDirect(message.error);
         return self._invokeDialog(message, done);
       }
 
-      dialogMessage.reply(message.error);
+      dialogMessage.sendDirect(message.error);
       done();
     });
   }
@@ -200,7 +206,7 @@ Dialog.prototype.start = function () {
     })(i);
   }
 
-  // if (self.messageOptions.abortKeyword) self.msg.reply('You can cancel this conversation with [' + self.messageOptions.abortKeyword + '].');
+  // if (self.messageOptions.abortKeyword) self.msg.sendDirect('You can cancel this conversation with [' + self.messageOptions.abortKeyword + '].');
   
   // call the callbacks in series
   // emit 'end' when all is done or an error occurs
@@ -208,13 +214,13 @@ Dialog.prototype.start = function () {
     self.data.dateTime = new Date();
 
     if (!self.data.aborted && self.messageOptions.onCompleteMessage)
-      self.msg.reply(self.messageOptions.onCompleteMessage);
+      self.msg.sendDirect(self.messageOptions.onCompleteMessage);
 
     return self.emit('end', err, self.msg);
   });
 };
 
-Dialog.TIMEOUT = 500 * 1000;
+Dialog.TIMEOUT = 3 * 60 * 1000; // 3 minute timeout
 
 /**
  * Module exports
