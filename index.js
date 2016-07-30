@@ -9,7 +9,6 @@ var Dialog = require('./dialog');
 function DynamicConversation(robot) {
   this.robot = robot;
   this.switchBoard = new Conversation(robot, 'user');
-  // robot.brain.data.announcements = robot.brain.data.announcements || [];
 }
 
 /**
@@ -42,8 +41,6 @@ DynamicConversation.prototype.start = function (msg, dialogOptions, callback) {
     if (err) {
       return callback(err, res, dialog);
     }
-
-    // this.robot.brain.data.announcements.unshift(dialog.fetch());
     return callback(null, res, dialog);
   }.bind(this));
   dialog.start();
