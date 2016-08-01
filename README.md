@@ -1,15 +1,67 @@
 # Hubot-dynamic-conversation
-This package helps you to make dynamic conversations with hubot. It allows you to collect information from a user based on some model questions
+This package helps you to make dynamic conversations with hubot. It allows you to collect information from a user based on some model questions.
 
-### Usage
+`robot.hear` is cool but if you do a lot of that to get a conversation going, the code becomes messy.
 
-#### *NB*
+#### NB
 
 Currently, the v0.1.4 of the [hubot-rocketchat](https://github.com/RocketChat/hubot-rocketchat) does not properly support attachment. To add the attachment support use my fork of the [hubot-rocketchat](https://github.com/ngenerio/hubot-rocketchat).
 
 Change the version number of hubot-rocketchat in your package.json to: https://github.com/ngenerio/hubot-rocketchat#a86a49244b87a73596fbc05f311e5d5c85737fa1 or use https://github.com/RocketChat/hubot-rocketchat/commit/72bbf02d519b5dedb2b8e45e093fe2b0b23df9b3
 
 Check the [example.coffee](https://github.com/4thParty/hubot-dynamic-conversation/blob/master/example.coffee) for more information.
+
+The converstaion with the user is built around the concept of message models.
+
+```javascript
+// message model
+{
+  question: String // question to ask the user
+  answer: {
+    type: String // could be 'choice', 'text, 'attachment'
+    options: [ // add the options object if the `type` of answer is `choice`
+      {
+        match: String, // what robot should listen to
+        valid: Boolean, // if set to `false` the conversatin is stopped
+        response: String, // the response sent to the user when the user text is matched
+        value: String, // this is stored in the answers object
+      }
+    ]
+  },
+  required: Boolean, // if required, the bot asks the user the same question till a correct or valid answer is provided 
+  error: String // the reply to the user when the bot does not match the user answer
+}
+```
+
+
+#### Options
+abortKeyword: String // the keyword used to abort the conversations
+onAbortMessage: String // the reply to the user when the conversation is aborted
+onCompleteMessage: String // reply sent to the user when the conversation is done.
+conversation: Array{Message Model} // an array of the message model
+
+#### Usage
+
+Create an instance of the conversation object
+
+```coffee
+dynamic = new DynamicConversation robot
+```
+
+Use the conversation object in your `robot.respond` code one time:
+
+```coffee
+robot.respond /problem/i, (msg) ->
+  msg.reply 'What is the problem'
+  someConversationModel = {...}
+  
+  // dialog is an event emitter
+  dialog = dynamic.start msg,  someConversationModel, (err, msg, dialog)
+```
+
+Check out the example below:
+
+#### Example
 
 ```coffee
 DynamicConversation = require 'hubot-dynamic-conversation'
@@ -63,12 +115,12 @@ robot.respond /problem/i, (msg) ->
     ]
   }
 
-dialog = dynamic.start msg, maintenanceRequestModel, (err, msg, dialog) ->
-  if err
-    robot.logger.error err
-  else
-    data = dialog.fetch()
-    robot.logger.info data
+  dialog = dynamic.start msg, maintenanceRequestModel, (err, msg, dialog) ->
+    if err
+      robot.logger.error err
+    else
+      data = dialog.fetch()
+      robot.logger.info data
 # dialog is an instance of an EventEmitter
 # It emits an `end` event when the dialog with the user is done
 ```
