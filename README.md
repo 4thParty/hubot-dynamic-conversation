@@ -36,8 +36,11 @@ The converstaion with the user is built around the concept of message models.
 
 #### Options
 abortKeyword: String // the keyword used to abort the conversations
+
 onAbortMessage: String // the reply to the user when the conversation is aborted
+
 onCompleteMessage: String // reply sent to the user when the conversation is done.
+
 conversation: Array{Message Model} // an array of the message model
 
 #### Usage
