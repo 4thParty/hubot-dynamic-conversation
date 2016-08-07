@@ -125,7 +125,7 @@ Dialog.prototype._invokeDialog = function (message, done) {
         var option = message.answer.options[choiceIndex];
 
         self.dialog.addChoice(option.match, function (dialogMessage) {
-          
+
           if (option.response)
             dialogMessage.sendDirect(option.response);
 
@@ -164,13 +164,8 @@ Dialog.prototype._invokeDialog = function (message, done) {
         return done();
       }
 
-      if (message.required) {
-        dialogMessage.sendDirect(message.error);
-        return self._invokeDialog(message, done);
-      }
-
       dialogMessage.sendDirect(message.error);
-      done();
+      return self._invokeDialog(message, done);
     });
   }
 };
@@ -207,7 +202,7 @@ Dialog.prototype.start = function () {
   }
 
   // if (self.messageOptions.abortKeyword) self.msg.sendDirect('You can cancel this conversation with [' + self.messageOptions.abortKeyword + '].');
-  
+
   // call the callbacks in series
   // emit 'end' when all is done or an error occurs
   series(cbs, function (err) {
