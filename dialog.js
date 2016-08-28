@@ -146,9 +146,9 @@ Dialog.prototype.addAttachmentQuestion = function (message, done) {
     }
 
     dialogMessage.sendDirect(message.error);
-    this.addSkip(message, done);
-    this.addAbort(done);
-    this.addAttachmentQuestion(message, done);
+    self.addSkip(message, done);
+    self.addAbort(done);
+    self.addAttachmentQuestion(message, done);
   });
 };
 
