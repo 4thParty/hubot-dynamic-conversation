@@ -61,6 +61,45 @@ Dialog.prototype._stripBotName = function (text) {
 };
 
 
+Dialog.prototype.updateAnswers = function (message, key, value) {
+  var currAnswer = {
+    question: message.question,
+    response: {
+      type: message.answer.type
+    }
+  };
+
+  currAnswer.response[key] = value;
+  this.data.answers.push(currAnswer);
+};
+
+
+Dialog.prototype.addSkip = function (message, done) {
+  var self = this;
+
+  if (!message.required) {
+    self.dialog.addChoice(/skip/i, function (dialogMessage) {
+      self.msg = dialogMessage;
+      done();
+    });
+  }
+};
+
+Dialog.prototype.addAbort = function (done) {
+  var self = this;
+
+  if (self.messageOptions.abortKeyword) {
+    self.dialog.addChoice(this.messageOptions.abortKeyword, function (dialogMessage) {
+    self.msg = dialogMessage;
+    self.data.aborted = true;
+
+    if (self.messageOptions.onAbortMessage)
+      self.msg.sendDirect(self.messageOptions.onAbortMessage);
+      done(new Error('Aborted'));
+    });
+  }
+};
+
 /**
  * Invoke a dialog message with the user and collect the response into the data
  * @param  {Object}   message It holds the message model
@@ -85,89 +124,75 @@ Dialog.prototype._invokeDialog = function (message, done) {
     question = ((code === 46 || code === 63) ? question : question + '.') + ' (or say [skip])';
   }
 
-  function updateAnswers(key, value) {
-    var currAnswer = {
-      question: message.question,
-      response: {
-        type: message.answer.type
-      }
-    };
-
-    currAnswer.response[key] = value;
-    self.data.answers.push(currAnswer);
-  }
-
   self.msg.sendDirect(question);
 
-  if (!message.required) {
-    self.dialog.addChoice(/skip/i, function (dialogMessage) {
-      //dialogMessage.sendDirect('Ok. we are skipping this section.');
+  self.addSkip(message, done);
+  self.addAbort(done);
+
+  if (message.answer.type === 'choice') self.addChoiceQuestion(message, done);
+
+  if (message.answer.type === 'text') self.addTextQuestion(message, done);
+
+  if (message.answer.type === 'attachment') self.addAttachmentQuestion(message, done);
+};
+
+Dialog.prototype.addAttachmentQuestion = function (message, done) {
+  var self = this;
+  self.dialog.addChoice(/.*/, function (dialogMessage) {
+    if (dialogMessage.message.attachment && dialogMessage.message.attachment.type === 'image') {
+      self.updateAnswers(message, 'link', dialogMessage.message.attachment.link);
       self.msg = dialogMessage;
-      done();
-    });
-  }
-
-  if (self.messageOptions.abortKeyword) {
-   self.dialog.addChoice(this.messageOptions.abortKeyword, function (dialogMessage) {
-      self.msg = dialogMessage;
-      self.data.aborted = true;
-
-      if (self.messageOptions.onAbortMessage)
-        self.msg.sendDirect(self.messageOptions.onAbortMessage);
-
-      done(new Error('Aborted'));
-    });
-  }
-
-  if (message.answer.type === 'choice') {
-    for (var j = 0, len = message.answer.options.length; j < len; j++) {
-      (function choiceRunner(choiceIndex) {
-        var option = message.answer.options[choiceIndex];
-
-        self.dialog.addChoice(option.match, function (dialogMessage) {
-
-          if (option.response)
-            dialogMessage.sendDirect(option.response);
-
-          updateAnswers('value', self._stripBotName(dialogMessage.message.text));
-
-          if (!option.valid) {
-            return done(new Error('User provided an invalid response'));
-          }
-
-          self.msg = dialogMessage;
-          done();
-        });
-      })(j);
+      return done();
     }
 
-    self.dialog.addChoice(/(.*)/i, function (dialogMessage) {
-      dialogMessage.sendDirect(message.error);
-      self.msg = dialogMessage;
-      self._invokeDialog(message, done);
-    });
-  }
+    dialogMessage.sendDirect(message.error);
+    self.addSkip(message, done);
+    self.addAbort(done);
+    self.addAttachmentQuestion(message, done);
+  });
+};
 
-  if (message.answer.type === 'text') {
-    self.dialog.addChoice(/^(?!\s*$).+/i, function (dialogMessage) {
-      updateAnswers('value', self._stripBotName(dialogMessage.message.text));
-      self.msg = dialogMessage;
-      done();
-    });
-  }
+Dialog.prototype.addTextQuestion = function (message, done) {
+  var self = this;
 
-  if (message.answer.type === 'attachment') {
-    self.dialog.addChoice(/.*/, function (dialogMessage) {
-      if (dialogMessage.message.attachment && dialogMessage.message.attachment.type === 'image') {
-        updateAnswers('link', dialogMessage.message.attachment.link);
+  self.dialog.addChoice(/^(?!\s*$).+/i, function (dialogMessage) {
+    self.updateAnswers(message, 'value', self._stripBotName(dialogMessage.message.text));
+    self.msg = dialogMessage;
+    done();
+  });
+};
+
+Dialog.prototype.addChoiceQuestion = function (message, done) {
+  var self = this;
+
+  for (var j = 0, len = message.answer.options.length; j < len; j++) {
+    (function choiceRunner(choiceIndex) {
+      var option = message.answer.options[choiceIndex];
+
+      self.dialog.addChoice(option.match, function (dialogMessage) {
+
+        if (option.response)
+          dialogMessage.sendDirect(option.response);
+
+        self.updateAnswers(message, 'value', self._stripBotName(dialogMessage.message.text));
+
+        if (!option.valid) {
+          return done(new Error('User provided an invalid response'));
+        }
+
         self.msg = dialogMessage;
-        return done();
-      }
-
-      dialogMessage.sendDirect(message.error);
-      return self._invokeDialog(message, done);
-    });
+        done();
+      });
+    })(j);
   }
+
+  self.dialog.addChoice(/(.*)/i, function (dialogMessage) {
+    dialogMessage.sendDirect(message.error);
+    self.msg = dialogMessage;
+    self.addSkip(message, done);
+    self.addAbort(done);
+    self.addChoiceQuestion(message, done);
+  });
 };
 
 /**
