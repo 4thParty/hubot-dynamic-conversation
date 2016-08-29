@@ -2,6 +2,20 @@ var series = require('async-series');
 var util = require('util');
 var EventEmitter = require('events');
 
+function toRegExp(s) {
+  if (typeof s === 'string')
+  {
+    // create a regex to parse a regex, hopefully without creating an infinite space-time vortex
+    var regex = new RegExp('^/(.+)/(.*)$');
+    var match = s.match(regex);
+    if (match) {
+      return new RegExp(match[1], match[2]);
+    }
+  }
+  
+  return new RegExp(s.toString());
+};
+
 /**
  * Starts a new dialog with a user
  * @param {Conversation} switchBoard
@@ -36,28 +50,8 @@ util.inherits(Dialog, EventEmitter);
  */
 Dialog.prototype._stripBotName = function (text) {
 
-  // TODO: consider using the following code (after testing)
-
-  // var match = text.match(new RegExp("^(@?(?:"+ this.robot.name + "|" + this.robot.alias + "|hubot):?)?(.*)", "i"));
-  // return match[2].trim();
-
-  var nameStart = text.charAt(0) === '@' ? 1 : 0;
-  var nameStrip;
-
-  if (text.indexOf(this.robot.name) === nameStart) nameStrip = this.robot.name;
-  else if (text.indexOf(this.robot.alias) === nameStart) nameStrip = this.robot.alias;
-  else if (text.indexOf('Hubot') === nameStart) nameStrip = 'Hubot';
-  else if (text.indexOf('hubot') === nameStart) nameStrip = 'hubot';
-
-  var len = !!nameStrip ? nameStart + nameStrip.length : 0;
-
-  // handle situations where someone answers a question with the bot name, which could legitimately happen
-  if (text.length == nameStrip.length)
-    return text;
-
-  if (text.charAt(len) === ':') len += 1;
-
-  return text.substring(len).trim()
+  var match = text.match(new RegExp("^(@?(?:"+ this.robot.name + "|" + this.robot.alias + "|hubot):?)?(.*)", "i"));
+  return match[2].trim();
 };
 
 
@@ -78,7 +72,7 @@ Dialog.prototype.addSkip = function (message, done) {
   var self = this;
 
   if (!message.required) {
-    self.dialog.addChoice(/skip/i, function (dialogMessage) {
+    self.dialog.addChoice(/\bskip\b/i, function (dialogMessage) {
       self.msg = dialogMessage;
       done();
     });
@@ -89,7 +83,7 @@ Dialog.prototype.addAbort = function (done) {
   var self = this;
 
   if (self.messageOptions.abortKeyword) {
-    self.dialog.addChoice(this.messageOptions.abortKeyword, function (dialogMessage) {
+    self.dialog.addChoice(toRegExp(this.messageOptions.abortKeyword), function (dialogMessage) {
     self.msg = dialogMessage;
     self.data.aborted = true;
 
@@ -169,7 +163,7 @@ Dialog.prototype.addChoiceQuestion = function (message, done) {
     (function choiceRunner(choiceIndex) {
       var option = message.answer.options[choiceIndex];
 
-      self.dialog.addChoice(option.match, function (dialogMessage) {
+      self.dialog.addChoice(toRegExp(option.match), function (dialogMessage) {
 
         if (option.response)
           dialogMessage.sendDirect(option.response);
