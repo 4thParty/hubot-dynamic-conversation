@@ -1,6 +1,6 @@
 {
   "name": "hubot-dynamic-conversation",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Have conversation with user without the hustle of `robot.hear`",
   "main": "index.js",
   "contributors": [
