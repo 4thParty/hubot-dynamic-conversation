@@ -134,7 +134,7 @@ Dialog.prototype.addAttachmentQuestion = function (message, done) {
   var self = this;
   self.dialog.addChoice(/.*/, function (dialogMessage) {
     if (dialogMessage.message.attachment && dialogMessage.message.attachment.type === 'image') {
-      self.updateAnswers(message, 'link', dialogMessage.message.attachment.link);
+      self.updateAnswers(message, 'value', dialogMessage.message.attachment.link);
       self.msg = dialogMessage;
       return done();
     }
