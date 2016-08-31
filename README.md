@@ -5,13 +5,13 @@ This package helps you to make dynamic conversations with hubot. It allows you t
 
 #### NB
 
-Currently, the v0.1.4 of the [hubot-rocketchat](https://github.com/RocketChat/hubot-rocketchat) does not properly support attachment. To add the attachment support use my fork of the [hubot-rocketchat](https://github.com/ngenerio/hubot-rocketchat).
+Currently, the v0.1.4 of the [hubot-rocketchat](https://github.com/RocketChat/hubot-rocketchat) does not properly support attachment. To add the attachment support use this fork of the [hubot-rocketchat](https://github.com/ngenerio/hubot-rocketchat).
 
 Change the version number of hubot-rocketchat in your package.json to: https://github.com/ngenerio/hubot-rocketchat#a86a49244b87a73596fbc05f311e5d5c85737fa1 or use https://github.com/RocketChat/hubot-rocketchat/commit/72bbf02d519b5dedb2b8e45e093fe2b0b23df9b3
 
 Check the [example.coffee](https://github.com/4thParty/hubot-dynamic-conversation/blob/master/example.coffee) for more information.
 
-The converstaion with the user is built around the concept of message models.
+The conversation with the user is built around the concept of message models.
 
 ```javascript
 // message model
@@ -21,10 +21,9 @@ The converstaion with the user is built around the concept of message models.
     type: String // could be 'choice', 'text, 'attachment'
     options: [ // add the options object if the `type` of answer is `choice`
       {
-        match: String, // what robot should listen to
+        match: String, // what robot should listen to - can be a regex
         valid: Boolean, // if set to `false` the conversatin is stopped
         response: String, // the response sent to the user when the user text is matched
-        value: String, // this is stored in the answers object
       }
     ]
   },
@@ -35,11 +34,18 @@ The converstaion with the user is built around the concept of message models.
 
 
 #### Options
-abortKeyword: String // the keyword used to abort the conversations
 
-onAbortMessage: String // the reply to the user when the conversation is aborted
+abortKeyword: String // the keyword used to abort the conversations (optional)
 
-onCompleteMessage: String // reply sent to the user when the conversation is done.
+onAbortMessage: String // the reply to the user when the conversation is aborted  (optional)
+
+onCompleteMessage: String // reply sent to the user when the conversation is done (optional)
+
+onTimeoutMessage: String // message sent to the user when the conversation times out
+
+skipKeyword: String // a keyword that can be used to skip non-required questions (optional)
+
+skipMessage: String // a message that can appended to any non-required questions (optional)
 
 conversation: Array{Message Model} // an array of the message model
 
@@ -76,10 +82,12 @@ robot.respond /problem/i, (msg) ->
   maintenanceRequestModel = {
     abortKeyword: 'quit',
     onAbortMessage: 'You cancelled the conversation.',
-    onCompleteMessage: 'Thanks for reporting this. I\'ll notify @bm immediately.',
+    onCompleteMessage: 'Thanks for reporting this. I\'ll notify someone immediately.',
+    skipKeyword: /\bskip\b$/i,
+    skipMessage: (or say 'skip'),
     conversation: [ 
       {
-        question: "Is it in a [public]or [private]area?",
+        question: "Is it in a public or private area?",
         answer: {
           type: "choice",
           options: [
@@ -87,7 +95,6 @@ robot.respond /problem/i, (msg) ->
               match: "public",
               valid: true,
               response: "OK you said *public*, next step...",
-              value: "public"
             },
             {
               match: "private",
@@ -97,7 +104,7 @@ robot.respond /problem/i, (msg) ->
           ]
         },
         required: true,
-        error: "Sorry, I didn't understand your response. Please say [private] or [public] to proceed."
+        error: "Sorry, I didn't understand your response. Please say private or public to proceed."
       },
       {
         question: "Please describe the issue.",
