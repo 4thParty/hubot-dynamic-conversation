@@ -120,10 +120,6 @@ Dialog.prototype._invokeDialog = function (message, done) {
 
   self.msg.sendDirect(question);
 
-  // allow broadcast-only conversations 
-  if (!message.answer)
-    return done();
-
   self.addSkip(message, done);
   self.addAbort(done);
 
