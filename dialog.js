@@ -25,7 +25,7 @@ function toRegExp(s) {
  */
 function Dialog(switchBoard, msg, messageOptions, robot) {
   EventEmitter.call(this);
-  this.dialog = switchBoard.startDialog(msg, Dialog.TIMEOUT, messageOptions.onTimeoutMessage);
+  this.dialog = switchBoard.startDialog(msg, messageOptions.timeout ?  messageOptions.timeout : Dialog.TIMEOUT, messageOptions.onTimeoutMessage);
   this.msg = msg;
   this.messageOptions = messageOptions;
   this.robot = robot;
