@@ -45,7 +45,7 @@ onTimeoutMessage: String // message sent to the user when the conversation times
 
 skipKeyword: String // a keyword that can be used to skip non-required questions (optional)
 
-skipMessage: String // a message that can appended to any non-required questions (optional)
+skipMessage: String // a message that can be appended to any non-required questions (optional)
 
 conversation: Array{Message Model} // an array of the message model
 
