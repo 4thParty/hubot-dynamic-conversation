@@ -71,8 +71,8 @@ Dialog.prototype.updateAnswers = function (message, key, value) {
 Dialog.prototype.addSkip = function (message, done) {
   var self = this;
 
-  if (!message.required) {
-    self.dialog.addChoice(/\bskip\b/i, function (dialogMessage) {
+  if (!message.required && self.messageOptions.skipKeyword) {
+    self.dialog.addChoice(toRegExp(self.messageOptions.skipKeyword), function (dialogMessage) {
       self.msg = dialogMessage;
       done();
     });
@@ -114,11 +114,15 @@ Dialog.prototype._invokeDialog = function (message, done) {
   var question = message.question;
   var code = question.charCodeAt(question.length - 1);
 
-  if (!message.required) {
-    question = ((code === 46 || code === 63) ? question : question + '.') + ' (or say [skip])';
+  if (message.required === false && self.messageOptions.skipMessage) {
+    question += ' ' + self.messageOptions.skipMessage;
   }
 
   self.msg.sendDirect(question);
+
+  // allow broadcast-only conversations 
+  if (!message.answer)
+    return done();
 
   self.addSkip(message, done);
   self.addAbort(done);
