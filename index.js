@@ -35,6 +35,7 @@ DynamicConversation.prototype.start = function (msg, dialogOptions, callback) {
   // override hubot-conversation's dialogTimeout so we can sendDirect()
   dialog.dialog.dialogTimeout = function (msg) {
       msg.sendDirect(dialogOptions.onTimeoutMessage || "Sorry, I timed out. You'll have to start again.");
+      callback(new Error('timed out'), msg, dialog)
   };
 
   dialog.on('end', function (err, res) {
