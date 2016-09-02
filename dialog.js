@@ -3,7 +3,10 @@ var util = require('util');
 var EventEmitter = require('events');
 
 function toRegExp(s) {
-  if (typeof s === 'string')
+  if (s instanceof RegExp)
+    return s;
+  else
+  if (typeof s === 'string' || s instanceof String)
   {
     // create a regex to parse a regex, hopefully without creating an infinite space-time vortex
     var regex = new RegExp('^/(.+)/(.*)$');
@@ -71,8 +74,10 @@ Dialog.prototype.updateAnswers = function (message, key, value) {
 Dialog.prototype.addSkip = function (message, done) {
   var self = this;
 
-  if (!message.required && self.messageOptions.skipKeyword) {
-    self.dialog.addChoice(toRegExp(self.messageOptions.skipKeyword), function (dialogMessage) {
+  if (!message.required)
+  {
+    skipKeyword = self.messageOptions.skipKeyword || /\bskip\b$/i; // because we need a default 'skip' keyword
+    self.dialog.addChoice(toRegExp(skipKeyword), function (dialogMessage) {
       self.msg = dialogMessage;
       done();
     });
@@ -114,8 +119,10 @@ Dialog.prototype._invokeDialog = function (message, done) {
   var question = message.question;
   var code = question.charCodeAt(question.length - 1);
 
-  if (message.required === false && self.messageOptions.skipMessage) {
-    question += ' ' + self.messageOptions.skipMessage;
+  if (message.required === false)
+  {
+    skipMessage = self.messageOptions.skipMessage || '(or say [skip] to continue)';
+    question += ' ' + skipMessage;
   }
 
   self.msg.sendDirect(question);
